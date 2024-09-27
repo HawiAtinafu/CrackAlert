@@ -124,24 +124,26 @@ def check_password_flow(rockyou_hashes):
         print("Password cannot be empty.")
         return
     
-    # Check password strength
-    strength, entropy = check_password_strength(password)
-    print(f"Password Entropy: {entropy:.2f} bits")
-    print(f"Password Strength: {strength}")
-    
-    # Perform dictionary attack
+    # Perform dictionary attack first
     hashed_input = hash_password(password)
     is_weak = dictionary_attack(hashed_input, rockyou_hashes)
-    
-    if strength == 'Weak' or is_weak:
-        if is_weak:
-            print("Alert: This password is found in the RockYou dataset and is considered weak.")
-        else:
-            print("Your password is weak.")
-        provide_recommendations(strength, is_weak)
+
+    # If password is found in the RockYou dataset, classify it as weak
+    if is_weak:
+        print("Alert: This password is found in the RockYou dataset and is considered weak.")
+        strength = 'Weak'  
     else:
-        print("Good news: This password is not found in the RockYou dataset and is considered strong.")
-        provide_recommendations(strength, is_weak)
+        # Check password strength based on entropy
+        strength, entropy = check_password_strength(password)
+        print(f"Password Entropy: {entropy:.2f} bits")
+        print(f"Password Strength: {strength}")
+    
+    # Provide recommendations
+    provide_recommendations(strength, is_weak)
+
+    if is_weak:
+        alert_admin("username_placeholder", password) 
+
 
 def main_menu(rockyou_hashes):
     while True:
